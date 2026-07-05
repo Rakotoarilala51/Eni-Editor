@@ -9,13 +9,8 @@ interface CodeEditorProps {
   onCursorChange: (label: string) => void;
 }
 
-/**
- * Éditeur de code : numéros de ligne + calque de surbrillance (lecture seule,
- * superposé) + textarea transparent pour la saisie/le curseur.
- * Reprend exactement la logique de synchronisation de l'original
- * (renderLineNumbers / renderHighlight / syncScroll / updateCursorStatus),
- * simplement pilotée par des refs React au lieu de sélections DOM directes.
- */
+const MONO_FONT = "font-[Consolas,'Courier_New',ui-monospace,monospace]";
+
 export default function CodeEditor({ value, onChange, onCursorChange }: CodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightCodeRef = useRef<HTMLElement>(null);
@@ -73,17 +68,25 @@ export default function CodeEditor({ value, onChange, onCursorChange }: CodeEdit
   }
 
   return (
-    <div className="editor-container" id="editorContainer">
-      <div className="line-numbers" id="lineNumbers" ref={lineNumbersRef}>
+    <div className="relative flex min-h-0 flex-1" id="editorContainer">
+      <div
+        className={`w-13 select-none overflow-hidden whitespace-pre bg-[#1e1e1e] py-2.5 pl-0 pr-2.5 text-right text-sm leading-5 text-[#858585] ${MONO_FONT}`}
+        id="lineNumbers"
+        ref={lineNumbersRef}
+      >
         {lineNumbersText}
       </div>
-      <div className="code-wrap">
-        <pre className="highlight-layer" id="highlightLayer" ref={highlightPreRef}>
+      <div className="relative flex-1 overflow-hidden">
+        <pre
+          className={`pointer-events-none absolute inset-0 m-0 box-border overflow-auto whitespace-pre bg-transparent px-4 py-2.5 text-sm leading-5 text-[#d4d4d4] ${MONO_FONT}`}
+          id="highlightLayer"
+          ref={highlightPreRef}
+        >
           <code ref={highlightCodeRef}></code>
         </pre>
         <textarea
           ref={textareaRef}
-          className="code-input"
+          className={`absolute inset-0 box-border resize-none overflow-auto whitespace-pre border-none bg-transparent px-4 py-2.5 text-sm leading-5 text-transparent caret-white outline-none ${MONO_FONT}`}
           id="codeInput"
           spellCheck={false}
           value={value}

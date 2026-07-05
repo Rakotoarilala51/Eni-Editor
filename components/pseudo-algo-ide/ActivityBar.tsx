@@ -13,6 +13,12 @@ import {
 
 type NonImplementedId = 'ab-search' | 'ab-git' | 'ab-run' | 'ab-ext';
 
+const ICON_BASE =
+  'relative flex h-12 w-full items-center justify-center text-[#858585] cursor-pointer hover:text-[#d7d7d7] [&>svg]:h-[22px] [&>svg]:w-[22px]';
+
+const ICON_ACTIVE =
+  'text-white before:content-[\'\'] before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5 before:bg-white';
+
 /**
  * Barre d'activité verticale (Explorateur / Rechercher / Git / Exécuter / Extensions).
  * Comportement identique à l'original : cliquer sur une icône "non implémentée"
@@ -27,10 +33,10 @@ export default function ActivityBar() {
   }
 
   return (
-    <div className="activitybar">
-      <div className="ab-group">
+    <div className="flex w-12 flex-none flex-col justify-between border-r border-[#1b1b1b] bg-[#333333]">
+      <div className="flex flex-col">
         <div
-          className={`ab-icon${active === 'ab-explorer' ? ' active' : ''}`}
+          className={`${ICON_BASE} ${active === 'ab-explorer' ? ICON_ACTIVE : ''}`}
           id="ab-explorer"
           title="Explorateur"
           onClick={() => setActive('ab-explorer')}
@@ -38,7 +44,7 @@ export default function ActivityBar() {
           <ExplorerIcon />
         </div>
         <div
-          className={`ab-icon${active === 'ab-search' ? ' active' : ''}`}
+          className={`${ICON_BASE} ${active === 'ab-search' ? ICON_ACTIVE : ''}`}
           id="ab-search"
           title="Rechercher (non implémenté)"
           onClick={() => clickNonImplemented('ab-search')}
@@ -46,7 +52,7 @@ export default function ActivityBar() {
           <SearchIcon />
         </div>
         <div
-          className={`ab-icon${active === 'ab-git' ? ' active' : ''}`}
+          className={`${ICON_BASE} ${active === 'ab-git' ? ICON_ACTIVE : ''}`}
           id="ab-git"
           title="Source Control (non implémenté)"
           onClick={() => clickNonImplemented('ab-git')}
@@ -54,7 +60,7 @@ export default function ActivityBar() {
           <GitIcon />
         </div>
         <div
-          className={`ab-icon${active === 'ab-run' ? ' active' : ''}`}
+          className={`${ICON_BASE} ${active === 'ab-run' ? ICON_ACTIVE : ''}`}
           id="ab-run"
           title="Exécuter et déboguer (utilise le bouton ▷ de l'éditeur)"
           onClick={() => clickNonImplemented('ab-run')}
@@ -62,7 +68,7 @@ export default function ActivityBar() {
           <RunOutlineIcon />
         </div>
         <div
-          className={`ab-icon${active === 'ab-ext' ? ' active' : ''}`}
+          className={`${ICON_BASE} ${active === 'ab-ext' ? ICON_ACTIVE : ''}`}
           id="ab-ext"
           title="Extensions (non implémenté)"
           onClick={() => clickNonImplemented('ab-ext')}
@@ -70,11 +76,11 @@ export default function ActivityBar() {
           <ExtensionsIcon />
         </div>
       </div>
-      <div className="ab-group" style={{ marginBottom: 8 }}>
-        <div className="ab-icon" title="Compte (non implémenté)">
+      <div className="mb-2 flex flex-col">
+        <div className={ICON_BASE} title="Compte (non implémenté)">
           <AccountIcon />
         </div>
-        <div className="ab-icon" title="Paramètres (non implémenté)">
+        <div className={ICON_BASE} title="Paramètres (non implémenté)">
           <SettingsIcon />
         </div>
       </div>
