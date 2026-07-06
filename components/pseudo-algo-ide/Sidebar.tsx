@@ -1,9 +1,12 @@
-import { FileCode2, FileText, File as FileIcon } from "lucide-react";
+import { useState } from "react";
+import { FileCode2, FileText, File as FileIcon, FilePlus2 } from "lucide-react";
 
 interface SidebarProps {
   fileNames: string[];
   activeFile: string | null;
   onOpenFile: (name: string) => void;
+  /** Retourne { success, error? } — la logique de création reste chez le parent (qui possède `files`). */
+  onCreateFile: (name: string) => { success: boolean; error?: string };
 }
 
 /** Choisit une icône Lucide selon l'extension du fichier. */
@@ -22,7 +25,31 @@ export default function Sidebar({
   fileNames,
   activeFile,
   onOpenFile,
+  onCreateFile,
 }: SidebarProps) {
+  const [showInput, setShowInput] = useState(false);
+  const [newFileName, setNewFileName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  function handleConfirm() {
+    const result = onCreateFile(newFileName);
+
+    if (!result.success) {
+      setError(result.error ?? "Erreur inconnue.");
+      return;
+    }
+
+    setNewFileName("");
+    setError(null);
+    setShowInput(false);
+  }
+
+  function handleCancel() {
+    setNewFileName("");
+    setError(null);
+    setShowInput(false);
+  }
+
   return (
     <div
       className="flex w-62.5 flex-none flex-col overflow-hidden border-r border-[#1b1b1b] bg-[#252526]"
@@ -32,12 +59,41 @@ export default function Sidebar({
         EXPLORATEUR
       </div>
       <div
-        className="flex cursor-pointer items-center gap-1 px-2 py-0.75 text-[12.5px] font-bold tracking-[0.02em] text-[#cccccc]"
+        className="flex cursor-pointer items-center justify-between px-2 py-0.75 text-[12.5px] font-bold tracking-[0.02em] text-[#cccccc]"
         id="folderRow"
       >
-        <span className="w-4 text-center text-[10px] text-[#cccccc]">▾</span>
-        <span>PSEUDO-ALGO</span>
+        <span className="flex items-center gap-1">
+          <span className="w-4 text-center text-[10px] text-[#cccccc]">▾</span>
+          PSEUDO-ALGO
+        </span>
+        <FilePlus2
+          size={16}
+          className="mr-1 hover:scale-105"
+          onClick={() => setShowInput(true)}
+        />
       </div>
+
+      {showInput && (
+        <div className="flex flex-col gap-1 px-2 py-1">
+          <input
+            autoFocus
+            type="text"
+            placeholder="nom-du-fichier.algo"
+            value={newFileName}
+            onChange={(e) => setNewFileName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleConfirm();
+              if (e.key === "Escape") handleCancel();
+            }}
+            onBlur={handleConfirm}
+            className="rounded-sm border border-[#3c3c3c] bg-[#3c3c3c] px-1.5 py-0.5 text-[12.5px] text-white outline-none focus:border-[#007fd4]"
+          />
+          {error && (
+            <span className="px-0.5 text-[11px] text-[#f48771]">{error}</span>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col" id="fileList">
         {fileNames.map((name) => {
           const isActive = name === activeFile;

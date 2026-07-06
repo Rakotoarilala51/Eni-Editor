@@ -25,10 +25,10 @@ import BottomPanel, { type PanelViewId } from './BottomPanel';
 import type { TerminalLine } from './TerminalView';
 import StatusBar from './StatusBar';
 
-const FILE_NAMES = Object.keys(FILES);
-
+const DEFAULT_ALGO_CONTENT = `écrire("Nouveau programme");`;
+const STORAGE_KEY = 'pseudo-algo:files';
 export default function PseudoAlgoIDE() {
-  const [contents, setContents] = useState<Record<string, string>>(() => ({ ...FILES }));
+  const [contents, setContents] = useState<Record<string, string>>({ ...FILES });
   const [openTabs, setOpenTabs] = useState<string[]>([]);
   const [activeFile, setActiveFile] = useState<string | null>(null);
 
@@ -38,6 +38,9 @@ export default function PseudoAlgoIDE() {
   const [activePanelView, setActivePanelView] = useState<PanelViewId>('terminalView');
   const [terminalLines, setTerminalLines] = useState<TerminalLine[]>([]);
   const [stdinValue, setStdinValue] = useState('');
+
+  //  dynamique désormais, basé sur `contents` (qui contient aussi les nouveaux fichiers)
+  const fileNames = Object.keys(contents);
 
   function openFile(name: string) {
     setOpenTabs((prev) => (prev.includes(name) ? prev : [...prev, name]));
@@ -53,6 +56,7 @@ export default function PseudoAlgoIDE() {
       setActiveFile(next.length ? next[Math.max(0, idx - 1)] : null);
     }
   }
+
   useEffect(() => {
     if (!activeFile) return;
     if (activeFile === 'README.md') {
@@ -79,7 +83,6 @@ export default function PseudoAlgoIDE() {
       return;
     }
     setActivePanelView('terminalView');
-    // équivalent de terminalView.innerHTML=''; puis termLine('$ pseudo-algo run ...')
     setTerminalLines([{ text: `$ pseudo-algo run ${activeFile}`, cls: 'prompt' }]);
 
     const src = contents[activeFile];
@@ -117,11 +120,76 @@ export default function PseudoAlgoIDE() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-
   useEffect(() => {
     openFile('README.md');
     openFile('02-factorielle.algo');
   }, []);
+
+  /* Création de fichier */
+  function createAlgoFile(
+    fileName: string,
+    existingContents: Record<string, string>
+  ): { success: boolean; contents?: Record<string, string>; fileName?: string; error?: string } {
+    let name = fileName.trim();
+    if (!name) return { success: false, error: "Le nom du fichier est requis." };
+    if (!name.endsWith(".algo")) name += ".algo";
+    if (existingContents[name] !== undefined) {
+      return { success: false, error: "Un fichier avec ce nom existe déjà." };
+    }
+    if (!/^[a-zA-Z0-9_-]+\.algo$/.test(name)) {
+      return { success: false, error: "Nom invalide (lettres, chiffres, - et _ uniquement)." };
+    }
+    return {
+      success: true,
+      contents: { ...existingContents, [name]: DEFAULT_ALGO_CONTENT },
+      fileName: name,
+    };
+  }
+
+  function handleCreateFile(fileName: string) {
+    const result = createAlgoFile(fileName, contents);
+    if (result.success) {
+      setContents(result.contents!);
+      openFile(result.fileName!); // ouvre aussi un onglet pour le nouveau fichier
+      return { success: true };
+    }
+    return { success: false, error: result.error };
+  }
+  //Enregistre dans localStorage
+
+
+function loadStoredFiles(): Record<string, string> | null {
+  if (typeof window === 'undefined') return null; // SSR guard
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null; // JSON corrompu, on ignore
+  }
+}
+
+function saveFiles(files: Record<string, string>) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
+  } catch (e) {
+    console.error('Impossible de sauvegarder les fichiers :', e);
+  }
+}
+
+//GetFichier
+
+// Chargement de localStorage APRÈS le montage (donc après l'hydration)
+useEffect(() => {
+  const stored = loadStoredFiles();
+  if (stored) {
+    setContents(stored);
+  }
+}, []); // tableau vide = une seule fois au montage
+
+// Sauvegarde automatique à chaque modification
+useEffect(() => {
+  saveFiles(contents);
+}, [contents]);
 
   return (
     <div className="pseudo-algo-ide">
@@ -129,7 +197,12 @@ export default function PseudoAlgoIDE() {
         <TitleBar onRun={runProgram} />
         <div className="main">
           <ActivityBar />
-          <Sidebar fileNames={FILE_NAMES} activeFile={activeFile} onOpenFile={openFile} />
+          <Sidebar
+            fileNames={fileNames}
+            activeFile={activeFile}
+            onOpenFile={openFile}
+            onCreateFile={handleCreateFile}
+          />
           <div className="editor-area">
             <EditorTabs
               openTabs={openTabs}
