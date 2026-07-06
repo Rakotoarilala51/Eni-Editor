@@ -1,3 +1,4 @@
+import { Play } from 'lucide-react';
 import { PlayFillIcon } from './icons';
 
 interface EditorToolbarProps {
@@ -17,12 +18,12 @@ export default function EditorToolbar({ activeFile, onRun }: EditorToolbarProps)
         ) : null}
       </div>
       <button
-        className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-[#4ade80] hover:bg-[#3a3d41]"
+        className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-[#4ade80] hover:bg-[#3a3d41] cursor-pointer"
         id="runBtn"
         title="Exécuter le fichier pseudo-code (F5)"
         onClick={onRun}
       >
-        <PlayFillIcon />
+        <Play className="h-3.5 w-3.5" />
         Exécuter
       </button>
     </div>

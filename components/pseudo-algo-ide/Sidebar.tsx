@@ -46,7 +46,7 @@ export default function Sidebar({
   }, [creating]);
 
   function startCreating() {
-    setExpanded(true); // s'assurer que la liste est visible pour voir le champ apparaître
+    setExpanded(true);
     setDraftName("");
     setCreating(true);
   }
@@ -62,13 +62,10 @@ export default function Sidebar({
       cancelCreating();
       return;
     }
-    // Si aucune extension n'est fournie, on part sur .algo par défaut
-    // (le format natif de cet IDE).
     const finalName = /\.[a-zA-Z0-9]+$/.test(trimmed)
       ? trimmed
       : `${trimmed}.algo`;
     if (fileNames.includes(finalName)) {
-      // Nom déjà pris : on laisse le champ ouvert pour corriger, pas de création.
       return;
     }
     onCreateFile(finalName);
