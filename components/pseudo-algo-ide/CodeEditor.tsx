@@ -1,7 +1,14 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { highlightAlgo } from '@/lib/highlight';
+import { useCallback, useRef } from 'react';
+import Editor, { type OnMount, type OnChange } from '@monaco-editor/react';
+import type * as monacoEditor from 'monaco-editor';
+import {
+  registerPseudocodeLanguage,
+  PSEUDOCODE_LANGUAGE_ID,
+  PSEUDOCODE_THEME_ID,
+} from '@/lib/pseudoLanguage';
+import { registerBlockAutoClose } from '@/lib/blockAutoClose';
 
 interface CodeEditorProps {
   value: string;
@@ -9,94 +16,49 @@ interface CodeEditorProps {
   onCursorChange: (label: string) => void;
 }
 
-const MONO_FONT = "font-[Consolas,'Courier_New',ui-monospace,monospace]";
-
 export default function CodeEditor({ value, onChange, onCursorChange }: CodeEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const highlightCodeRef = useRef<HTMLElement>(null);
-  const highlightPreRef = useRef<HTMLPreElement>(null);
-  const lineNumbersRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
+  
+  
 
-  // renderLineNumbers()
-  let lineNumbersText = '';
-  const lines = value.split('\n').length;
-  for (let i = 1; i <= lines; i++) lineNumbersText += i + '\n';
+  const handleMount: OnMount = useCallback((editor, monaco) => {
+    editorRef.current = editor;
+    registerPseudocodeLanguage(monaco);
+    monaco.editor.setModelLanguage(editor.getModel()!, PSEUDOCODE_LANGUAGE_ID);
+    monaco.editor.setTheme(PSEUDOCODE_THEME_ID);
+    registerBlockAutoClose(editor, monaco); 
 
-  // renderHighlight()
-  useEffect(() => {
-    if (highlightCodeRef.current) {
-      highlightCodeRef.current.innerHTML = highlightAlgo(value) + '\n';
-    }
-  }, [value]);
+    editor.onDidChangeCursorPosition((e) => {
+      onCursorChange(`Ln ${e.position.lineNumber}, Col ${e.position.column}`);
+    });
+  }, [onCursorChange]);
 
-  function updateCursorStatus() {
-    const el = textareaRef.current;
-    if (!el) return;
-    const val = el.value.slice(0, el.selectionStart ?? 0);
-    const parts = val.split('\n');
-    const ln = parts.length;
-    const col = parts[parts.length - 1].length + 1;
-    onCursorChange(`Ln ${ln}, Col ${col}`);
-  }
-
-  function syncScroll() {
-    const ta = textareaRef.current;
-    if (!ta) return;
-    if (lineNumbersRef.current) lineNumbersRef.current.scrollTop = ta.scrollTop;
-    if (highlightPreRef.current) {
-      highlightPreRef.current.scrollTop = ta.scrollTop;
-      highlightPreRef.current.scrollLeft = ta.scrollLeft;
-    }
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const ta = textareaRef.current;
-      if (!ta) return;
-      const start = ta.selectionStart, end = ta.selectionEnd;
-      const newValue = ta.value.slice(0, start) + '    ' + ta.value.slice(end);
-      onChange(newValue);
-      // repositionne le curseur après les 4 espaces insérés, une fois le
-      // textarea remis à jour avec la nouvelle valeur
-      requestAnimationFrame(() => {
-        if (textareaRef.current) {
-          textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + 4;
-        }
-      });
-    }
-  }
+  const handleChange: OnChange = useCallback((val) => {
+    onChange(val ?? '');
+  }, [onChange]);
 
   return (
     <div className="relative flex min-h-0 flex-1" id="editorContainer">
-      <div
-        className={`w-13 select-none overflow-hidden whitespace-pre bg-[#1e1e1e] py-2.5 pl-0 pr-2.5 text-right text-sm leading-5 text-[#858585] ${MONO_FONT}`}
-        id="lineNumbers"
-        ref={lineNumbersRef}
-      >
-        {lineNumbersText}
-      </div>
-      <div className="relative flex-1 overflow-hidden">
-        <pre
-          className={`pointer-events-none absolute inset-0 m-0 box-border overflow-auto whitespace-pre bg-transparent px-4 py-2.5 text-sm leading-5 text-[#d4d4d4] ${MONO_FONT}`}
-          id="highlightLayer"
-          ref={highlightPreRef}
-        >
-          <code ref={highlightCodeRef}></code>
-        </pre>
-        <textarea
-          ref={textareaRef}
-          className={`absolute inset-0 box-border resize-none overflow-auto whitespace-pre border-none bg-transparent px-4 py-2.5 text-sm leading-5 text-transparent caret-white outline-none ${MONO_FONT}`}
-          id="codeInput"
-          spellCheck={false}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onScroll={syncScroll}
-          onKeyUp={updateCursorStatus}
-          onClick={updateCursorStatus}
-          onKeyDown={handleKeyDown}
-        />
-      </div>
+      <Editor
+        value={value}
+        language={PSEUDOCODE_LANGUAGE_ID}
+        theme={PSEUDOCODE_THEME_ID}
+        onChange={handleChange}
+        onMount={handleMount}
+        className="flex-1"
+        options={{
+          fontFamily: "Consolas, 'Courier New', ui-monospace, monospace",
+          fontSize: 14,
+          lineHeight: 20,
+          tabSize: 4,
+          insertSpaces: true,
+          minimap: { enabled: true },
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          renderLineHighlight: 'line',
+          padding: { top: 10, bottom: 10 },
+        }}
+      />
     </div>
   );
 }

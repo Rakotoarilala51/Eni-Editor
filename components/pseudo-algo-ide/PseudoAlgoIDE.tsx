@@ -27,14 +27,6 @@ import StatusBar from './StatusBar';
 
 const FILE_NAMES = Object.keys(FILES);
 
-/**
- * Composant racine de l'IDE "Pseudo Algo".
- *
- * Reprend exactement la logique de l'état de l'éditeur d'origine
- * (contents / openTabs / activeFile / exécution / terminal / stdin),
- * simplement portée sur des `useState` React au lieu de variables globales
- * + manipulation directe du DOM.
- */
 export default function PseudoAlgoIDE() {
   const [contents, setContents] = useState<Record<string, string>>(() => ({ ...FILES }));
   const [openTabs, setOpenTabs] = useState<string[]>([]);
@@ -61,10 +53,6 @@ export default function PseudoAlgoIDE() {
       setActiveFile(next.length ? next[Math.max(0, idx - 1)] : null);
     }
   }
-
-  // showActive() : met à jour la langue affichée dans la barre de statut et
-  // réinitialise la position du curseur quand on bascule sur un fichier .algo
-  // (le textarea reçoit une nouvelle valeur, le curseur repart donc en 0).
   useEffect(() => {
     if (!activeFile) return;
     if (activeFile === 'README.md') {
@@ -116,7 +104,6 @@ export default function PseudoAlgoIDE() {
     }
   }
 
-  // F5 / Ctrl+Entrée déclenchent l'exécution, quel que soit le focus.
   const runProgramRef = useRef(runProgram);
   runProgramRef.current = runProgram;
   useEffect(() => {
@@ -130,11 +117,10 @@ export default function PseudoAlgoIDE() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Initialisation : mêmes onglets ouverts par défaut que la version d'origine.
+
   useEffect(() => {
     openFile('README.md');
     openFile('02-factorielle.algo');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

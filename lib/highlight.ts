@@ -4,7 +4,7 @@
  */
 
 const KEYWORD_ALT =
-  "si|alors|sinon|sinonsi|finsi|tantque|faire|finfaire|pour|haut|bas|répéter|repeter|jusqu'à|jusqua|retourner|debfonc|finfonc|debproc|finproc|écrire|ecrire|lire|vrai|faux|et|ou|non|mod|div|entier|réel|reel|chaine|caractère|caractere|booléen|booleen|vide|arrêt|arret|nouveau|dr|d";
+  "si|alors|sinon|sinonsi|finsi|tantque|faire|finfaire|pour|haut|bas|répéter|repeter|jusqu'à|jusqua|retourner|debfonc|finfonc|debproc|finproc|écrire|ecrire|lire|vrai|faux|et|ou|non|mod|div|entier|réel|reel|chaine|caractère|caractere|booléen|booleen|vide|arrêt|arret|nouveau|dr|d|pointeur|structure";
 
 const HL_RE = new RegExp(
   '(\\/\\/.*$)' +                              // 1 commentaire
