@@ -36,7 +36,7 @@ Piles/files natives, fichiers, tableaux de structures dynamiques avancés : hors
 de ce mini-langage exécutable.
 `,
 
-  "01-bonjour.algo": `écrire("Bonjour Aina, l'interpréteur fonctionne !");`,
+  "01-bonjour.algo": `écrire("Bonjour 1!");`,
 
   "02-factorielle.algo": `entier factorielle(d entier n)
 debfonc
