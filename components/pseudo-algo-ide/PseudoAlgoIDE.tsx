@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import './pseudo-algo-ide.css';
+import { useEffect, useRef, useState } from "react";
+import "./pseudo-algo-ide.css";
 
-import { FILES, README_HTML } from '@/lib/files';
+import { FILES } from "@/lib/files";
 import {
   tokenize,
   Parser,
@@ -11,33 +11,36 @@ import {
   PseudoError,
   StopSignal,
   type InterpreterIO,
-} from '@/lib/interpreter';
+} from "@/lib/interpreter";
 
-import TitleBar from './TitleBar';
-import ActivityBar from './ActivityBar';
-import Sidebar from './Sidebar';
-import EditorTabs from './EditorTabs';
-import EditorToolbar from './EditorToolbar';
-import CodeEditor from './CodeEditor';
-import ReadmeView from './ReadmeView';
-import Watermark from './Watermark';
-import BottomPanel, { type PanelViewId } from './BottomPanel';
-import type { TerminalLine } from './TerminalView';
-import StatusBar from './StatusBar';
-
-const FILE_NAMES = Object.keys(FILES);
+import TitleBar from "./TitleBar";
+import ActivityBar from "./ActivityBar";
+import Sidebar from "./Sidebar";
+import EditorTabs from "./EditorTabs";
+import EditorToolbar from "./EditorToolbar";
+import CodeEditor from "./CodeEditor";
+import Watermark from "./Watermark";
+import BottomPanel, { type PanelViewId } from "./BottomPanel";
+import type { TerminalLine } from "./TerminalView";
+import StatusBar from "./StatusBar";
 
 export default function PseudoAlgoIDE() {
-  const [contents, setContents] = useState<Record<string, string>>(() => ({ ...FILES }));
+  const [contents, setContents] = useState<Record<string, string>>(() => ({
+    ...FILES,
+  }));
+  const [fileNames, setFileNames] = useState<string[]>(() =>
+    Object.keys(FILES),
+  );
   const [openTabs, setOpenTabs] = useState<string[]>([]);
   const [activeFile, setActiveFile] = useState<string | null>(null);
 
-  const [cursorLabel, setCursorLabel] = useState('Ln 1, Col 1');
-  const [langLabel, setLangLabel] = useState('Pseudo-code Algo');
+  const [cursorLabel, setCursorLabel] = useState("Ln 1, Col 1");
+  const [langLabel, setLangLabel] = useState("Pseudo-code Algo");
 
-  const [activePanelView, setActivePanelView] = useState<PanelViewId>('terminalView');
+  const [activePanelView, setActivePanelView] =
+    useState<PanelViewId>("terminalView");
   const [terminalLines, setTerminalLines] = useState<TerminalLine[]>([]);
-  const [stdinValue, setStdinValue] = useState('');
+  const [stdinValue, setStdinValue] = useState("");
 
   function openFile(name: string) {
     setOpenTabs((prev) => (prev.includes(name) ? prev : [...prev, name]));
@@ -53,14 +56,25 @@ export default function PseudoAlgoIDE() {
       setActiveFile(next.length ? next[Math.max(0, idx - 1)] : null);
     }
   }
+
+  /** Crée un nouveau fichier vide, l'ajoute à l'explorateur et l'ouvre dans l'éditeur. */
+  function createFile(name: string) {
+    setContents((prev) => {
+      if (name in prev) return prev; // sécurité : ne pas écraser un fichier existant
+      return { ...prev, [name]: "" };
+    });
+    setFileNames((prev) => (prev.includes(name) ? prev : [...prev, name]));
+    openFile(name);
+  }
+
   useEffect(() => {
     if (!activeFile) return;
-    if (activeFile === 'README.md') {
-      setLangLabel('Markdown');
+    if (activeFile.endsWith(".md")) {
+      setLangLabel("Markdown");
     } else {
-      setLangLabel('Pseudo-code Algo');
-      setCursorLabel('Ln 1, Col 1');
+      setLangLabel("Pseudo-code Algo");
     }
+    setCursorLabel("Ln 1, Col 1");
   }, [activeFile]);
 
   function handleCodeChange(newValue: string) {
@@ -68,26 +82,35 @@ export default function PseudoAlgoIDE() {
     setContents((prev) => ({ ...prev, [activeFile]: newValue }));
   }
 
-  function pushTermLine(text: string, cls?: TerminalLine['cls']) {
+  function pushTermLine(text: string, cls?: TerminalLine["cls"]) {
     setTerminalLines((prev) => [...prev, { text, cls }]);
   }
 
   function runProgram() {
-    if (!activeFile || !activeFile.endsWith('.algo')) {
-      setActivePanelView('terminalView');
-      pushTermLine(`Impossible d'exécuter "${activeFile || '(aucun fichier)'}" — sélectionnez un fichier .algo.`, 'error');
+    if (!activeFile || !activeFile.endsWith(".algo")) {
+      setActivePanelView("terminalView");
+      pushTermLine(
+        `Impossible d'exécuter "${activeFile || "(aucun fichier)"}" — sélectionnez un fichier .algo.`,
+        "error",
+      );
       return;
     }
-    setActivePanelView('terminalView');
+    setActivePanelView("terminalView");
     // équivalent de terminalView.innerHTML=''; puis termLine('$ pseudo-algo run ...')
-    setTerminalLines([{ text: `$ pseudo-algo run ${activeFile}`, cls: 'prompt' }]);
+    setTerminalLines([
+      { text: `$ pseudo-algo run ${activeFile}`, cls: "prompt" },
+    ]);
 
     const src = contents[activeFile];
     const stdinLines = stdinValue.split(/\r?\n/);
     let idx = 0;
     const io: InterpreterIO = {
-      write(s: string) { pushTermLine(s); },
-      read() { return idx < stdinLines.length ? stdinLines[idx++] : ''; },
+      write(s: string) {
+        pushTermLine(s);
+      },
+      read() {
+        return idx < stdinLines.length ? stdinLines[idx++] : "";
+      },
     };
     try {
       const tokens = tokenize(src);
@@ -95,12 +118,18 @@ export default function PseudoAlgoIDE() {
       const program = parser.parseProgram();
       const interp = new Interpreter(io);
       interp.run(program);
-      pushTermLine(`[terminé] ${activeFile} — code de sortie 0`, 'meta');
+      pushTermLine(`[terminé] ${activeFile} — code de sortie 0`, "meta");
     } catch (e: any) {
-      if (e instanceof StopSignal) pushTermLine('--- Arrêt du programme ---', 'meta');
-      else if (e instanceof PseudoError) pushTermLine('Erreur : ' + e.message, 'error');
-      else if (e instanceof RangeError) pushTermLine("Erreur : récursion trop profonde (pile d'appels dépassée)", 'error');
-      else pushTermLine('Erreur interne : ' + (e?.message || e), 'error');
+      if (e instanceof StopSignal)
+        pushTermLine("--- Arrêt du programme ---", "meta");
+      else if (e instanceof PseudoError)
+        pushTermLine("Erreur : " + e.message, "error");
+      else if (e instanceof RangeError)
+        pushTermLine(
+          "Erreur : récursion trop profonde (pile d'appels dépassée)",
+          "error",
+        );
+      else pushTermLine("Erreur interne : " + (e?.message || e), "error");
     }
   }
 
@@ -108,19 +137,18 @@ export default function PseudoAlgoIDE() {
   runProgramRef.current = runProgram;
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'F5' || (e.ctrlKey && e.key === 'Enter')) {
+      if (e.key === "F5" || (e.ctrlKey && e.key === "Enter")) {
         e.preventDefault();
         runProgramRef.current();
       }
     }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-
   useEffect(() => {
-    openFile('README.md');
-    openFile('02-factorielle.algo');
+    openFile("README.md");
+    openFile("02-factorielle.algo");
   }, []);
 
   return (
@@ -129,7 +157,12 @@ export default function PseudoAlgoIDE() {
         <TitleBar onRun={runProgram} />
         <div className="main">
           <ActivityBar />
-          <Sidebar fileNames={FILE_NAMES} activeFile={activeFile} onOpenFile={openFile} />
+          <Sidebar
+            fileNames={fileNames}
+            activeFile={activeFile}
+            onOpenFile={openFile}
+            onCreateFile={createFile}
+          />
           <div className="editor-area">
             <EditorTabs
               openTabs={openTabs}
@@ -139,17 +172,15 @@ export default function PseudoAlgoIDE() {
             />
             <EditorToolbar activeFile={activeFile} onRun={runProgram} />
 
-            {activeFile === 'README.md' && <ReadmeView html={README_HTML} />}
-
-            {activeFile && activeFile !== 'README.md' && (
+            {activeFile ? (
               <CodeEditor
                 value={contents[activeFile]}
                 onChange={handleCodeChange}
                 onCursorChange={setCursorLabel}
               />
+            ) : (
+              <Watermark />
             )}
-
-            {!activeFile && <Watermark />}
           </div>
         </div>
 

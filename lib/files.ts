@@ -1,15 +1,44 @@
 /**
  * Fichiers du projet d'exemple (mêmes exemples que la version originale)
- * + README affiché dans l'onglet "README.md".
- * (extrait tel quel de <script> — logique/contenu inchangés)
+ * + README désormais éditable comme un fichier texte normal dans CodeEditor.
  */
 
 export const FILES: Record<string, string> = {
-"README.md": `README`,
+  "README.md": `# pseudo-algo
 
-"01-bonjour.algo": `écrire("Bonjour Aina, l'interpréteur fonctionne !");`,
+Interpréteur du pseudo-code du cours de Complexité Algorithmique (ENI).
 
-"02-factorielle.algo": `entier factorielle(d entier n)
+## Utilisation
+
+Ouvrez un fichier .algo dans l'explorateur, modifiez-le, puis cliquez sur ▷ Exécuter (ou F5).
+La sortie s'affiche dans le panneau TERMINAL en bas. Les valeurs lues par lire() se saisissent
+dans l'onglet ENTRÉE (STDIN), une valeur par ligne.
+
+## Supporté
+
+- déclarations : entier, réel, chaine, caractère, booléen, pointeur
+- tableaux t[i] indexés à partir de 1, littéral pratique t := [1,2,3];
+- affectation := ou <-
+- écrire(...) / lire(...)
+- si / alors / sinonsi / sinon / finsi
+- tantque ... faire ... finfaire
+- pour i := a haut/bas b faire ... finfaire
+- répéter ... jusqu'à condition
+- fonctions et procédures : debfonc/finfonc, debproc/finproc, paramètres d (valeur) et dr (référence)
+- récursivité, et / ou / non, mod / div, concaténation avec &
+- listes chaînées : nil, nouveau(p), laisser(p), accès aux champs via -> ou .
+- structures : structure NOM ... fin;, type structure NOM alias;, y compris
+  les champs auto-référentiels (structure NOM* champ;) pour les cellules chaînées
+
+## Non supporté
+
+Piles/files natives, fichiers, tableaux de structures dynamiques avancés : hors périmètre
+de ce mini-langage exécutable.
+`,
+
+  "01-bonjour.algo": `écrire("Bonjour Aina, l'interpréteur fonctionne !");`,
+
+  "02-factorielle.algo": `entier factorielle(d entier n)
 debfonc
     entier fact, i;
     fact := 1;
@@ -26,7 +55,7 @@ n := 6;
 r := factorielle(n);
 écrire("Factorielle de" & n & "=" & r);`,
 
-"03-sommes.algo": `entier somIter(d entier n)
+  "03-sommes.algo": `entier somIter(d entier n)
 debfonc
     entier i, s;
     i := 1; s := 0;
@@ -49,7 +78,7 @@ finfonc;
 écrire("Somme itérative 1..10 =" & somIter(10));
 écrire("Somme récursive 1..10 =" & somRec(10));`,
 
-"04-dichotomie.algo": `booléen dichotomie(d entier t[], d entier n, d entier elem)
+  "04-dichotomie.algo": `booléen dichotomie(d entier t[], d entier n, d entier elem)
 debfonc
     entier inf, sup, m;
     booléen trouve;
@@ -74,7 +103,7 @@ t := [3, 7, 12, 19, 25, 33, 41, 50];
 écrire("25 est présent ?" & dichotomie(t, 8, 25));
 écrire("100 est présent ?" & dichotomie(t, 8, 100));`,
 
-"05-tri-insertion.algo": `vide triInsertion(dr entier t[], d entier n)
+  "05-tri-insertion.algo": `vide triInsertion(dr entier t[], d entier n)
 debfonc
     entier i, j, cle;
     i := 2;
@@ -96,34 +125,84 @@ v := [5, 3, 8, 1, 9, 2];
 triInsertion(v, 6);
 écrire("Après tri :" & v);`,
 
-"06-lecture-clavier.algo": `entier a, b;
+  "06-lecture-clavier.algo": `entier a, b;
 écrire("Renseignez 2 valeurs dans l'onglet ENTRÉE (STDIN) du panneau du bas, puis Exécuter.");
 lire(a);
 lire(b);
-écrire("Somme =" & (a + b));`
+écrire("Somme =" & (a + b));`,
+  "07-liste-chainee.algo": `// Liste linéaire chaînée (cf. cours, chapitre 2.2)
+// insertete : insertion en tête ; parcours1 : parcours récursif à l'endroit.
+
+vide insertete(dr pointeur l, d entier elem)
+debproc
+    pointeur p;
+    nouveau(p);
+    p->info := elem;
+    p->suivant := l;
+    l := p;
+finproc;
+
+vide parcours1(d pointeur l)
+debproc
+    si l <> nil alors
+        écrire(l->info);
+        parcours1(l->suivant);
+    finsi;
+finproc;
+
+vide parcours3(d pointeur l)
+debproc
+    tantque l <> nil faire
+        écrire(l->info);
+        l := l->suivant;
+    finfaire;
+finproc;
+
+pointeur liste;
+liste := nil;
+insertete(liste, 3);
+insertete(liste, 2);
+insertete(liste, 1);
+
+écrire("Parcours récursif (endroit) :");
+parcours1(liste);
+
+écrire("Parcours itératif :");
+parcours3(liste);`,
+
+  "08-structure-annuaire.algo": `// Structures + pointeur auto-référentiel (cf. cours, chapitre 2.2 / TD3)
+// Un annuaire d'individus chaînés entre eux via le champ 'suivant'.
+
+structure individu
+    chaine nom, telephone;
+    structure individu* suivant;
+fin;
+
+type structure individu personne;
+
+vide ajouter(dr pointeur annuaire, d chaine nom, d chaine telephone)
+debproc
+    personne p;
+    p.nom := nom;
+    p.telephone := telephone;
+    p.suivant := annuaire;
+    annuaire := p;
+finproc;
+
+vide afficher(d pointeur annuaire)
+debproc
+    si annuaire <> nil alors
+        écrire(annuaire->nom & " - " & annuaire->telephone);
+        afficher(annuaire->suivant);
+    finsi;
+finproc;
+
+pointeur annuaire;
+annuaire := nil;
+ajouter(annuaire, "Rakoto", "0341234567");
+ajouter(annuaire, "Rasoa", "0339876543");
+ajouter(annuaire, "Rabe", "0324455667");
+
+écrire("Annuaire (du plus récent au plus ancien) :");
+afficher(annuaire);`,
 };
-
-export const README_HTML = `<h1>pseudo-algo</h1>
-<div style="color:#8a8a8a;margin-bottom:14px;">Interpréteur du pseudo-code du cours de Complexité Algorithmique (ENI).</div>
-
-<h2>Utilisation</h2>
-Ouvrez un fichier <code>.algo</code> dans l'explorateur, modifiez-le, puis cliquez sur <code>▷ Exécuter</code> (ou F5).
-La sortie s'affiche dans le panneau <code>TERMINAL</code> en bas. Les valeurs lues par <code>lire()</code> se saisissent
-dans l'onglet <code>ENTRÉE (STDIN)</code>, une valeur par ligne.
-
-<h2>Supporté</h2>
-- déclarations : entier, réel, chaine, caractère, booléen
-- tableaux t[i] indexés à partir de 1, littéral pratique t := [1,2,3];
-- affectation := ou <-
-- écrire(...) / lire(...)
-- si / alors / sinonsi / sinon / finsi
-- tantque ... faire ... finfaire
-- pour i := a haut/bas b faire ... finfaire
-- répéter ... jusqu'à condition
-- fonctions et procédures : debfonc/finfonc, debproc/finproc, paramètres d (valeur) et dr (référence)
-- récursivité, et / ou / non, mod / div, concaténation avec &
-
-<h2>Non supporté</h2>
-Pointeurs, listes chaînées, structures (structure...fin), piles/files natives : ce sont des exercices sur la
-mémoire adressée qui ne se traduisent pas directement dans ce mini-langage exécutable.
-`;
