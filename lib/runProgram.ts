@@ -2,7 +2,6 @@ import {
   tokenize,
   Parser,
   Interpreter,
-  PseudoError,
   StopSignal,
 } from "./interpreter";
 
@@ -34,13 +33,11 @@ export function runProgram(code: string, stdin: string): ExecutionResult {
       status = "Programme arrêté";
     } else {
       const message =
-        error instanceof PseudoError
-          ? error.message
-          : error instanceof RangeError
-            ? "Récursion trop profonde."
-            : error instanceof Error
-              ? error.message
-              : String(error);
+        error instanceof RangeError
+          ? "Récursion trop profonde."
+          : error instanceof Error
+            ? error.message
+            : String(error);
       lines.push({ text: `Erreur : ${message}`, kind: "error" });
       status = "Erreur d’exécution";
     }
