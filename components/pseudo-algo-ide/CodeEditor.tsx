@@ -59,6 +59,7 @@ export default function CodeEditor({
     <div className="relative min-h-0 flex-1" id="editorContainer">
       <div className="absolute inset-0">
         <Editor
+          loading={<span className="text-xs text-white/50">Chargement de l’éditeur…</span>}
           value={value}
           language={PSEUDOCODE_LANGUAGE_ID}
           theme={PSEUDOCODE_THEME_ID}
@@ -67,19 +68,22 @@ export default function CodeEditor({
           height="100%"
           width="100%"
           options={{
-            fontFamily: "Consolas, 'Courier New', ui-monospace, monospace",
-            fontSize: 14,
-            lineHeight: 20,
+            fontFamily: "var(--font-geist-mono), monospace",
+            fontSize: 13,
+            lineHeight: 24,
             tabSize: 4,
             insertSpaces: true,
-            minimap: { enabled: true },
+            minimap: { enabled: false },
             scrollBeyondLastLine: false,
             automaticLayout: true,
             renderLineHighlight: "line",
-            padding: { top: 10, bottom: 10 },
+            padding: { top: 24, bottom: 24 },
             lineNumbers: "on",
             lineNumbersMinChars: 3,
             glyphMargin: false,
+            folding: false,
+            overviewRulerLanes: 0,
+            wordWrap: "on",
           }}
         />
       </div>
