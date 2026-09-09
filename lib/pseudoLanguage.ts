@@ -82,15 +82,15 @@ export function registerPseudocodeLanguage(monaco: typeof Monaco) {
     base: 'vs-dark',
     inherit: true,
     rules: [
-      { token: 'comment', foreground: '6a9955', fontStyle: 'italic' },  // tok-comment
-      { token: 'string', foreground: 'ce9178' },                        // tok-string
-      { token: 'number', foreground: 'b5cea8' },                        // tok-number
-      { token: 'keyword', foreground: '569cd6', fontStyle: 'bold' },    // tok-keyword
-      { token: 'support.function', foreground: 'dcdcaa' },              // tok-func
+      { token: 'comment', foreground: '777a80', fontStyle: 'italic' },  // tok-comment
+      { token: 'string', foreground: 'bfc1c5' },                        // tok-string
+      { token: 'number', foreground: 'd7d8da' },                        // tok-number
+      { token: 'keyword', foreground: 'ffffff', fontStyle: 'bold' },    // tok-keyword
+      { token: 'support.function', foreground: 'eeeeee' },              // tok-func
       { token: 'operator', foreground: 'd4d4d4' },
     ],
     colors: {
-      'editor.background': '#1e1e1e',
+      'editor.background': '#1f2228',
       'editor.foreground': '#d4d4d4',
       'editorLineNumber.foreground': '#858585',
     },
