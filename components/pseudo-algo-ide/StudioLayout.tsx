@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TypewriterTitle from "./TypewriterTitle";
 import type { ReactNode } from "react";
 import { ArrowUpRight, Braces, ChevronDown, Grid2X2 } from "lucide-react";
 
@@ -29,7 +30,7 @@ export default function StudioLayout({
       <section className="studio-intro">
         <div>
           <p className="eyebrow">PSEUDO-CODE · ENI</p>
-          <h1>Une idée. Un algorithme.</h1>
+          <TypewriterTitle />
           <p>Écrivez, exécutez, comprenez. Tout simplement.</p>
         </div>
         <div className="intro-index">

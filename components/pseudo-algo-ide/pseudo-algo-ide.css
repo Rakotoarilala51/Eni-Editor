@@ -655,3 +655,48 @@
 
 
 }
+
+/* Reserve the complete title's space, including natural wrapping on mobile. */
+.typewriter-word {
+  white-space: nowrap;
+}
+
+.typewriter-character {
+  position: relative;
+  opacity: 1;
+  animation: typewriter-reveal 85ms step-end var(--character-delay) backwards;
+}
+
+.typewriter-character::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: .12em;
+  width: 1px;
+  height: .95em;
+  background: currentColor;
+  opacity: 0;
+  animation: typewriter-cursor 85ms step-end var(--character-delay);
+}
+
+.typewriter-title > [aria-hidden] > span:last-child .typewriter-character:last-child::after {
+  animation-duration: 700ms;
+  animation-iteration-count: 4;
+}
+
+@keyframes typewriter-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes typewriter-cursor {
+  0%, 50% { opacity: .7; }
+  51%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-character,
+  .typewriter-character::after {
+    animation: none;
+  }
+}
