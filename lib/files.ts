@@ -126,7 +126,7 @@ triInsertion(v, 6);
 écrire("Après tri :" & v);`,
 
   "06-lecture-clavier.algo": `entier a, b;
-écrire("Renseignez 2 valeurs dans l'onglet ENTRÉE (STDIN) du panneau du bas, puis Exécuter.");
+écrire("Renseignez 2 valeurs dans Entrées du programme, puis Exécuter.");
 lire(a);
 lire(b);
 écrire("Somme =" & (a + b));`,
