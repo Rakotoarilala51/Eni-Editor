@@ -21,9 +21,12 @@ export function toNumber(v: any): number {
 }
 
 export function toDisplay(v: any): string {
-  if (v === undefined || v === null) return '';
-  if (typeof v === 'boolean') return v ? 'vrai' : 'faux';
-  if (Array.isArray(v)) return '[' + v.slice(1).join(', ') + ']';
+  if (v === undefined || v === null) return "";
+  if (typeof v === "boolean") return v ? "vrai" : "faux";
+  if (v && typeof v === "object" && v.__pile) {
+    return "pile[" + v.items.join(", ") + "] (sommet à droite)";
+  }
+  if (Array.isArray(v)) return "[" + v.slice(1).join(", ") + "]";
   return String(v);
 }
 
