@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Check, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
+import ExampleCard from "./ExampleCard";
 import { EXAMPLES } from "./examples";
 
 interface ExamplesGalleryProps {
@@ -61,26 +62,13 @@ export default memo(function ExamplesGallery({
         />
       </div>
       <div className="examples-grid">
-        {filteredExamples.map(({ file, title, description, category }) => (
-          <button
-            className="example-card"
-            key={file}
-            onClick={() => onSelect(file)}
-          >
-            <span className="card-top">
-              <span>{category}</span>
-              {activeFile === file ? (
-                <Check size={17} />
-              ) : (
-                <ArrowUpRight size={17} />
-              )}
-            </span>
-            <span className="card-title">{title}</span>
-            <span className="card-description">{description}</span>
-            <span className="card-bottom">
-              {file.slice(0, 2)} <span>OUVRIR L’EXEMPLE</span>
-            </span>
-          </button>
+        {filteredExamples.map((example) => (
+          <ExampleCard
+            key={example.file}
+            example={example}
+            selected={activeFile === example.file}
+            onSelect={onSelect}
+          />
         ))}
       </div>
       {filteredExamples.length === 0 && (
