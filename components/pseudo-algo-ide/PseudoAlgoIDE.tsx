@@ -1,18 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useState } from "react";
-import {
-  ArrowDownToLine,
-  ArrowUpRight,
-  Braces,
-  ChevronDown,
-  Columns2,
-  Grid2X2,
-  Play,
-  Plus,
-  Rows2,
-} from "lucide-react";
+import StudioLayout from "./StudioLayout";
+import PlaygroundToolbar from "./PlaygroundToolbar";
 import CodePane from "./CodePane";
 import ResultPane from "./ResultPane";
 import ExamplesGallery from "./ExamplesGallery";
@@ -58,71 +48,16 @@ export default function PseudoAlgoIDE() {
   }
 
   return (
-    <main className="algo-studio">
-      <header className="studio-header">
-        <Link href="/" className="brand" aria-label="ENI Algo, accueil">
-          <Braces size={29} strokeWidth={1.3} />
-          <span>
-            eni<span className="brand-muted"> / </span>algo
-          </span>
-        </Link>
-        <span className="header-caption">LE LABORATOIRE D’ALGORITHMES</span>
-        <button className="outline-button" onClick={openGallery}>
-          <Grid2X2 size={15} /> Exemples <ChevronDown size={13} />
-        </button>
-      </header>
-
-      <section className="studio-intro">
-        <div>
-          <p className="eyebrow">PSEUDO-CODE · ENI</p>
-          <h1>Une idée. Un algorithme.</h1>
-          <p>Écrivez, exécutez, comprenez. Tout simplement.</p>
-        </div>
-        <div className="intro-index">
-          <span>01 — CODE</span>
-          <span>02 — RÉSULTAT</span>
-        </div>
-      </section>
-
+    <StudioLayout onOpenGallery={openGallery}>
       <section className="playground" aria-label="Espace de programmation">
-        <div className="playground-toolbar">
-          <div className="project-name">
-            <span className="project-mark">/</span>
-            <span>{title}</span>
-            <span className="language-badge">.algo</span>
-          </div>
-          <div className="toolbar-actions">
-            <button
-              className="icon-button"
-              title="Ouvrir mon brouillon"
-              aria-label="Ouvrir mon brouillon"
-              onClick={() => select(DRAFT_FILE)}
-            >
-              <Plus size={17} />
-            </button>
-            <button
-              className="icon-button"
-              title="Télécharger le code"
-              aria-label="Télécharger le code"
-              onClick={download}
-            >
-              <ArrowDownToLine size={17} />
-            </button>
-            <button
-              className="icon-button layout-toggle"
-              title="Changer la disposition"
-              aria-label="Empiler les panneaux"
-              aria-pressed={stacked}
-              onClick={() => setStacked((previous) => !previous)}
-            >
-              {stacked ? <Columns2 size={17} /> : <Rows2 size={17} />}
-            </button>
-            <span className="toolbar-divider" />
-            <button className="run-button" onClick={run}>
-              <Play size={14} fill="currentColor" /> Exécuter <kbd>Ctrl ↵</kbd>
-            </button>
-          </div>
-        </div>
+        <PlaygroundToolbar
+          title={title}
+          stacked={stacked}
+          onOpenDraft={() => select(DRAFT_FILE)}
+          onDownload={download}
+          onToggleLayout={() => setStacked((previous) => !previous)}
+          onRun={run}
+        />
 
         <div className={`workspace ${stacked ? "stacked" : ""}`}>
           <CodePane
@@ -140,13 +75,6 @@ export default function PseudoAlgoIDE() {
           />
         </div>
       </section>
-      <footer className="studio-footer">
-        <span>Un espace pour apprendre, une ligne à la fois.</span>
-        <button onClick={openGallery}>
-          Besoin d’inspiration ? Explorer les exemples{" "}
-          <ArrowUpRight size={14} />
-        </button>
-      </footer>
 
       {galleryOpen && (
         <ExamplesGallery
@@ -155,6 +83,6 @@ export default function PseudoAlgoIDE() {
           onClose={closeGallery}
         />
       )}
-    </main>
+    </StudioLayout>
   );
 }
