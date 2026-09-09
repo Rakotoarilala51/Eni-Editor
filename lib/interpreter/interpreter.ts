@@ -52,6 +52,7 @@ export class Interpreter {
   structs: Map<string, StructDef>;
   typeAliases: Map<string, string>;
   global: Env;
+  private defaultPile: any = null;
 
   constructor(io: InterpreterIO) {
     this.io = io;
@@ -96,6 +97,7 @@ export class Interpreter {
   ): any {
     if (!varType) return 0;
     if (varType === "pointeur") return null;
+    if (varType === "pile") return this.newPile()
     if (varType === "chaine" || varType === "caractere") return "";
     if (varType === "booleen") return false;
     const struct = this.resolveStructType(varType);
@@ -359,6 +361,12 @@ export class Interpreter {
         const fname = normalize(node.name);
         if (fname === "nouveau") return this.builtinNouveau(node.args, env);
         if (fname === "laisser") return this.builtinLaisser(node.args, env);
+        if (fname === "empiler") return this.builtinEmpiler(node.args, env);
+        if (fname === "depiler") return this.builtinDepiler(node.args, env);
+        if (fname === "sommetpile") return this.builtinSommetPile(node.args, env);
+        if (fname === "pilevide") return this.builtinPileVide(node.args, env);
+        if (fname === "pilepleine") return this.builtinPilePleine(node.args, env);
+        if (fname === "initpilevide") return this.builtinInitPileVide(node.args, env);
         return this.callFunction(node.name, node.args, env);
       }
       default:
@@ -390,6 +398,91 @@ export class Interpreter {
     if (argNodes.length !== 1)
       throw new PseudoError("laisser(...) attend exactement 1 argument");
     this.eval(argNodes[0], env);
+    return undefined;
+  }
+  
+  private newPile(): any {
+    return { __pile: true, items: [] };
+  }
+
+  private asPile(v: any, ctx: string): any {
+    if (!v || typeof v !== "object" || Array.isArray(v) || !v.__pile) {
+      throw new PseudoError(
+        `${ctx}(...) : la variable fournie n'est pas une pile (déclarez-la avec 'pile nom;')`,
+      );
+    }
+    return v;
+  }
+
+  private getDefaultPile(): any {
+    if (!this.defaultPile) this.defaultPile = this.newPile();
+    return this.defaultPile;
+  }
+
+  builtinEmpiler(argNodes: AstNode[], env: Env): any {
+    let pile: any, valNode: AstNode;
+    if (argNodes.length === 2) {
+      pile = this.asPile(this.eval(argNodes[0], env), "empiler");
+      valNode = argNodes[1];
+    } else if (argNodes.length === 1) {
+      pile = this.getDefaultPile();
+      valNode = argNodes[0];
+    } else {
+      throw new PseudoError("empiler(...) attend 1 argument (valeur) ou 2 (pile, valeur)");
+    }
+    pile.items.push(this.eval(valNode, env));
+    return undefined;
+  }
+
+  builtinDepiler(argNodes: AstNode[], env: Env): any {
+    let pile: any, targetNode: AstNode;
+    if (argNodes.length === 2) {
+      pile = this.asPile(this.eval(argNodes[0], env), "depiler");
+      targetNode = argNodes[1];
+    } else if (argNodes.length === 1) {
+      pile = this.getDefaultPile();
+      targetNode = argNodes[0];
+    } else {
+      throw new PseudoError("depiler(...) attend 1 argument (cible) ou 2 (pile, cible)");
+    }
+    if (pile.items.length === 0)
+      throw new PseudoError("Erreur : la pile est vide (dépilement impossible)");
+    const val = pile.items.pop();
+    this.assignTo(targetNode, val, env);
+    return undefined;
+  }
+
+  builtinSommetPile(argNodes: AstNode[], env: Env): any {
+    let pile: any;
+    if (argNodes.length === 1) pile = this.asPile(this.eval(argNodes[0], env), "sommetpile");
+    else if (argNodes.length === 0) pile = this.getDefaultPile();
+    else throw new PseudoError("sommetpile(...) attend 0 argument ou 1 (pile)");
+    if (pile.items.length === 0)
+      throw new PseudoError("Erreur : la pile est vide (pas de sommet)");
+    return pile.items[pile.items.length - 1];
+  }
+
+  builtinPileVide(argNodes: AstNode[], env: Env): any {
+    let pile: any;
+    if (argNodes.length === 1) pile = this.asPile(this.eval(argNodes[0], env), "pilevide");
+    else if (argNodes.length === 0) pile = this.getDefaultPile();
+    else throw new PseudoError("pilevide(...) attend 0 argument ou 1 (pile)");
+    return pile.items.length === 0;
+  }
+
+  builtinPilePleine(argNodes: AstNode[], env: Env): any {
+    if (argNodes.length === 1) this.asPile(this.eval(argNodes[0], env), "pilepleine");
+    else if (argNodes.length !== 0)
+      throw new PseudoError("pilepleine(...) attend 0 argument ou 1 (pile)");
+    return false; // représentation non bornée dans cet interpréteur
+  }
+
+  builtinInitPileVide(argNodes: AstNode[], env: Env): any {
+    let pile: any;
+    if (argNodes.length === 1) pile = this.asPile(this.eval(argNodes[0], env), "initpilevide");
+    else if (argNodes.length === 0) pile = this.getDefaultPile();
+    else throw new PseudoError("initpilevide(...) attend 0 argument ou 1 (pile)");
+    pile.items.length = 0;
     return undefined;
   }
 
