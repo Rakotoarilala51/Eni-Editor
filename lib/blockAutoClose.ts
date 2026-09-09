@@ -20,7 +20,7 @@ export function registerBlockAutoClose(
   editor: MonacoEditor.IStandaloneCodeEditor,
   monaco: typeof Monaco
 ) {
-  editor.onKeyDown((e) => {
+  return editor.onKeyDown((e) => {
     if (e.keyCode !== monaco.KeyCode.Enter) return;
 
     const model = editor.getModel();
